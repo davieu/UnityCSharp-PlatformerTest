@@ -12,7 +12,11 @@ public class PlayerMovement : MonoBehaviour
     private Animator anim;
     private BoxCollider2D boxCollider;
     private float wallJumpCooldown;
-    private float horizontalInput; 
+    private float horizontalInput;
+
+    // wall jumping limiters
+    public int wallJumpMax = 1;
+    private int wallJumpCount = 0;
 
     private void Awake() {
         // grab references for rigidbody and animator from game object
@@ -39,7 +43,7 @@ public class PlayerMovement : MonoBehaviour
         anim.SetBool("grounded", isGrounded());
 
         // wall jump logic
-        if (wallJumpCooldown > 0.2f) {
+        if (wallJumpCooldown > .2) {
             body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
 
             if (onWall() && !isGrounded()) {
@@ -60,8 +64,13 @@ public class PlayerMovement : MonoBehaviour
             wallJumpCooldown += Time.deltaTime;
         }
 
+        if (isGrounded()) {
+            wallJumpCount = 0;
+        }
+
         //print(onWall() + ":wall");
         //print(isGrounded() + ":ground");
+        //print(wallJumpCount + ":ground");
     }
 
     private void jump() {
@@ -69,7 +78,8 @@ public class PlayerMovement : MonoBehaviour
             body.velocity = new Vector2(body.velocity.x, jumpSpeed);
             anim.SetTrigger("jump");
         }
-        else if (onWall() && !isGrounded()){
+        else if (onWall() && !isGrounded()) {
+            //wallJumpCount = 0;
             // for getting off wall
             // Vector2(direction, pushed horizontally speed, pushed up speed set to zero since it for no direction pressed)
             // Vector2(direction, pushed horizontally speed, pushed up speed set to zero since it for no direction pressed)
@@ -78,11 +88,12 @@ public class PlayerMovement : MonoBehaviour
                 // flip player in opposite direction once pushed off wall.
                 transform.localScale = new Vector3(-Mathf.Sign(transform.localScale.x), transform.localScale.y, transform.localScale.z);
             }
-            else {
+            else if (wallJumpCount < wallJumpMax) {
                 // for going up walls
                 // get new vector2. Find out which direction the player is facing and create a force opposite to it.
                 // Mathf.Sign() when it gets a negative number it returns -1 and returns 1 for positive numbers
                 // Vector2(direction player is facing * velocity of pushed away from wall, velocity of pushed UP from wall 
+                wallJumpCount += 1;
                 body.velocity = new Vector2(-Mathf.Sign(transform.localScale.x) * 3, 6);
             }
 
@@ -96,6 +107,7 @@ public class PlayerMovement : MonoBehaviour
     private bool isGrounded() {
         // BoxCast(origin, size, angle, direction, virtualbox distance(how far you want the virtual box placed), layerMask (choose which layer you want it to collide with) )
         RaycastHit2D raycastHit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size, 0, Vector2.down, 0.1f, groundLayer);
+
         return raycastHit.collider != null;
     }
 
@@ -103,6 +115,10 @@ public class PlayerMovement : MonoBehaviour
         // BoxCast(origin, size, angle, direction, virtualbox distance(how far you want the virtual box placed), layerMask (choose which layer you want it to collide with) )
         RaycastHit2D raycastHit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size, 0, new Vector2(transform.localScale.x, 0), 0.1f, wallLayer);
         return raycastHit.collider != null;
+    }
+
+    public bool canAttack() {
+        return horizontalInput == 0 && isGrounded() & !onWall();
     }
 
     // Start is called before the first frame update
