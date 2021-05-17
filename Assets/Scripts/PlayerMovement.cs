@@ -36,10 +36,12 @@ public class PlayerMovement : MonoBehaviour
 
     // Update is called once per frame
     private void Update() {
-        horizontalInput = Input.GetAxis("Horizontal");
+        if (!isDashing) {
+            horizontalInput = Input.GetAxis("Horizontal");
+        }
 
         // flip player when moving left or right
-        if(horizontalInput > 0.01f) {
+        if (horizontalInput > 0.01f) {
             transform.localScale = Vector3.one; // shorthand for (1,1,1)
         } else if (horizontalInput < -0.01f) {
             transform.localScale = new Vector3(-1, 1, 1);
@@ -72,6 +74,7 @@ public class PlayerMovement : MonoBehaviour
         }
 
         if (isGrounded()) {
+            //isDashing = false;
             wallJumpCount = 0;
         }
 
@@ -86,19 +89,26 @@ public class PlayerMovement : MonoBehaviour
         }
 
         if (Input.GetKey(KeyCode.Keypad0)) {
-            //print(dashCooldownTimer);
-            isDashing = true;
+            print(dashCooldown);
             if (dashCooldown <= 0) {
                 StartCoroutine(Dash());
+                isDashing = false;
             }
+            isDashing = false;
         }
+
+        print("grounded: " + isGrounded());
+        print("onwall: " + onWall());
+        print("isDashing: " + isDashing);
     }
 
     IEnumerator Dash() {
+        anim.SetTrigger("dash");
         float startTime = Time.time;
         float localScaleX = transform.localScale.x;
-        //float movementSpeed = dashSpeed * Time.deltaTime;
-        while (Time.time < startTime + dashTime && !onWall()) {
+        isDashing = false;
+        while (Time.time < startTime + dashTime) {
+            isDashing = true;
             float movementSpeed = dashSpeed * Time.deltaTime;
 
             if (Mathf.Sign(localScaleX) == 1) {
@@ -108,14 +118,13 @@ public class PlayerMovement : MonoBehaviour
             }
 
             dashCooldown = resetDashCooldown;
-            
             yield return null;
         }
         isDashing = false;
     }
 
     private void jump() {
-        if (isGrounded()) {   
+        if (isGrounded() && !isDashing) {   
             body.velocity = new Vector2(body.velocity.x, jumpSpeed);
             anim.SetTrigger("jump");
         }
@@ -156,7 +165,8 @@ public class PlayerMovement : MonoBehaviour
     }
 
     public bool canAttack() {
-        return horizontalInput == 0 && isGrounded() && !onWall();
+        //return horizontalInput == 0 && isGrounded() && !onWall();
+        return isGrounded() && !onWall() && !isDashing;
     }
 
     // Start is called before the first frame update

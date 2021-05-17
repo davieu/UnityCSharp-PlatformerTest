@@ -5,16 +5,22 @@ using UnityEngine;
 public class PlayerAttack : MonoBehaviour
 {
     [SerializeField] private float attackCooldown;
+    [SerializeField] private float meleeAttackCooldown;
     // position from which the fireballs will be fired
     [SerializeField] private Transform firePoint;
+    [SerializeField] private Transform swingPoint;
     // place all temp fireballs that were created
     [SerializeField] private GameObject[] fireballs;
+    [SerializeField] private GameObject meleeAttackBlast;
+    [SerializeField] private Animator meleeAnim;
     private Animator anim;
     private PlayerMovement playerMovement;
     private float cooldownTimer = Mathf.Infinity;
+    private float meleeCooldownTimer = Mathf.Infinity;
 
     private void Awake() {
         anim = GetComponent<Animator>();
+        //meleeAnim = GetComponent<Animator>();
         playerMovement = GetComponent<PlayerMovement>();
     }
 
@@ -23,7 +29,31 @@ public class PlayerAttack : MonoBehaviour
         if (Input.GetMouseButton(0) && cooldownTimer > attackCooldown && playerMovement.canAttack()) {
             Attack();
         }
+        if (Input.GetMouseButton(1) && meleeCooldownTimer > meleeAttackCooldown && playerMovement.canAttack()) {
+            MeleeAttack();
+        }
         cooldownTimer += Time.deltaTime;
+        meleeCooldownTimer += Time.deltaTime;
+    }
+
+    private void MeleeAttack() {
+        anim.SetTrigger("meleeAttack");
+        meleeAttackBlast.SetActive(true);
+        meleeAnim.SetTrigger("meleeAttackParam");
+        meleeCooldownTimer = 0;
+        meleeAttackBlast.transform.position = swingPoint.position;
+        float localScaleX = transform.localScale.x;
+        if (Mathf.Sign(localScaleX) == 1) {
+            meleeAttackBlast.transform.localScale = new Vector3(0.65f, -0.65f, 0.65f);
+        } else {
+            meleeAttackBlast.transform.localScale = new Vector3(0.65f, 0.65f, 0.65f);
+        }
+        //meleeAttackBlast.GetComponent<Projectile>().SetDirection(Mathf.Sign(transform.localScale.x));
+    }
+
+    private void Deactivate() {
+        // deactivates fireball once explosion has finished
+        gameObject.SetActive(false);
     }
 
     private void Attack() {
