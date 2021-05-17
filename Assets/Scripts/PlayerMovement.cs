@@ -14,10 +14,14 @@ public class PlayerMovement : MonoBehaviour
     private float wallJumpCooldown;
     private float horizontalInput;
     private bool isDashing = false;
+    // how fast you want to dash
     public float dashSpeed;
+    // how long you want to dash for
     public float dashTime;
-    // for setting cooldown on when dash ability is ready
-    public float dashCooldown;
+    // cooldown for when dash ability is ready.
+    private float dashCooldown;
+    // resets the cooldown to specified time. higher numbers = longer CD
+    public float resetDashCooldown;
 
     // wall jumping limiters
     public int wallJumpMax = 1;
@@ -103,7 +107,7 @@ public class PlayerMovement : MonoBehaviour
                 transform.Translate(-movementSpeed, 0, 0);
             }
 
-            dashCooldown = 3;
+            dashCooldown = resetDashCooldown;
             
             yield return null;
         }
