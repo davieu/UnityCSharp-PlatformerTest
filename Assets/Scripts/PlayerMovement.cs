@@ -14,8 +14,10 @@ public class PlayerMovement : MonoBehaviour
     private float wallJumpCooldown;
     private float horizontalInput;
     private bool isDashing = false;
-    private float dashLength;
-    private bool dashHitWall;
+    public float dashSpeed;
+    public float dashTime;
+    // for setting cooldown on when dash ability is ready
+    public float dashCooldown;
 
     // wall jumping limiters
     public int wallJumpMax = 1;
@@ -69,36 +71,47 @@ public class PlayerMovement : MonoBehaviour
             wallJumpCount = 0;
         }
 
-        if (Input.GetKey(KeyCode.Keypad0)) {
-            dashLength += Time.deltaTime;
-            print(dashLength);
-            dash();
+
+        // starts the dash cooldown timer
+        dashCooldown -= Time.deltaTime;
+        // stops the timer once the cooldown is ready
+        if (dashCooldown < 0) {
+            dashCooldown = -1;
+        } else {
+            dashCooldown -= Time.deltaTime;
         }
 
-        //print(onWall() + ":wall");
-        //print(isGrounded() + ":ground");
-        //print(wallJumpCount + ":ground");
+        if (Input.GetKey(KeyCode.Keypad0)) {
+            //print(dashCooldownTimer);
+            isDashing = true;
+            if (dashCooldown <= 0) {
+                StartCoroutine(Dash());
+            }
+        }
     }
 
-    private void dash() {
-        isDashing = true;
+    IEnumerator Dash() {
+        float startTime = Time.time;
         float localScaleX = transform.localScale.x;
-        print(localScaleX);
+        //float movementSpeed = dashSpeed * Time.deltaTime;
+        while (Time.time < startTime + dashTime && !onWall()) {
+            float movementSpeed = dashSpeed * Time.deltaTime;
 
-        if (isGrounded() && !onWall()) {
             if (Mathf.Sign(localScaleX) == 1) {
-               //body.velocity = new Vector2(20, body.velocity.y);
-                float movementSpeed = 40 * Time.deltaTime;
                 transform.Translate(movementSpeed, 0, 0);
+            } else {
+                transform.Translate(-movementSpeed, 0, 0);
             }
-            else {
-                body.velocity = new Vector2(-20, body.velocity.y);
-            }
+
+            dashCooldown = 3;
+            
+            yield return null;
         }
+        isDashing = false;
     }
 
     private void jump() {
-        if (isGrounded() && !isDashing) {   
+        if (isGrounded()) {   
             body.velocity = new Vector2(body.velocity.x, jumpSpeed);
             anim.SetTrigger("jump");
         }
