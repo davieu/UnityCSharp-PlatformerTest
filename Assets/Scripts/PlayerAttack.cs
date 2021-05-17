@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
 {
+    // git test commit
     [SerializeField] private float attackCooldown;
     [SerializeField] private float meleeAttackCooldown;
     // position from which the fireballs will be fired
