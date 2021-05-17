@@ -13,6 +13,9 @@ public class PlayerMovement : MonoBehaviour
     private BoxCollider2D boxCollider;
     private float wallJumpCooldown;
     private float horizontalInput;
+    private bool isDashing = false;
+    private float dashLength;
+    private bool dashHitWall;
 
     // wall jumping limiters
     public int wallJumpMax = 1;
@@ -35,8 +38,6 @@ public class PlayerMovement : MonoBehaviour
         } else if (horizontalInput < -0.01f) {
             transform.localScale = new Vector3(-1, 1, 1);
         }
-
-
 
         // set animator parameters
         anim.SetBool("run", horizontalInput != 0);
@@ -68,13 +69,36 @@ public class PlayerMovement : MonoBehaviour
             wallJumpCount = 0;
         }
 
+        if (Input.GetKey(KeyCode.Keypad0)) {
+            dashLength += Time.deltaTime;
+            print(dashLength);
+            dash();
+        }
+
         //print(onWall() + ":wall");
         //print(isGrounded() + ":ground");
         //print(wallJumpCount + ":ground");
     }
 
+    private void dash() {
+        isDashing = true;
+        float localScaleX = transform.localScale.x;
+        print(localScaleX);
+
+        if (isGrounded() && !onWall()) {
+            if (Mathf.Sign(localScaleX) == 1) {
+               //body.velocity = new Vector2(20, body.velocity.y);
+                float movementSpeed = 40 * Time.deltaTime;
+                transform.Translate(movementSpeed, 0, 0);
+            }
+            else {
+                body.velocity = new Vector2(-20, body.velocity.y);
+            }
+        }
+    }
+
     private void jump() {
-        if (isGrounded()) {
+        if (isGrounded() && !isDashing) {   
             body.velocity = new Vector2(body.velocity.x, jumpSpeed);
             anim.SetTrigger("jump");
         }
@@ -101,9 +125,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision) {
-    }
-
     private bool isGrounded() {
         // BoxCast(origin, size, angle, direction, virtualbox distance(how far you want the virtual box placed), layerMask (choose which layer you want it to collide with) )
         RaycastHit2D raycastHit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size, 0, Vector2.down, 0.1f, groundLayer);
@@ -118,7 +139,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
     public bool canAttack() {
-        return horizontalInput == 0 && isGrounded() & !onWall();
+        return horizontalInput == 0 && isGrounded() && !onWall();
     }
 
     // Start is called before the first frame update
