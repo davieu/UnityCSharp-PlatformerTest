@@ -39,6 +39,7 @@ public class Projectile : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision) {
         hit = true;
         boxCollider.enabled = false;
+        // fireball explosion direction. 
         if (direction == 1) {
             transform.localRotation = Quaternion.Euler(0, 0, 90);
         } else {

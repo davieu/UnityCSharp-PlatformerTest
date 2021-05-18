@@ -57,14 +57,14 @@ public class PlayerMovement : MonoBehaviour
 
             if (onWall() && !isGrounded()) {
                 // when player is on wall. he will get stuck and not fall down
-                body.gravityScale = 0;
+                body.gravityScale = 2;
                 body.velocity = Vector2.zero;
             } 
             else {
                 body.gravityScale = 5;
             }
 
-            if (Input.GetKey(KeyCode.Space)) {
+            if (Input.GetMouseButton(2)) {
                 jump();
             }
 
@@ -88,7 +88,7 @@ public class PlayerMovement : MonoBehaviour
             dashCooldown -= Time.deltaTime;
         }
 
-        if (Input.GetKey(KeyCode.Keypad0)) {
+        if (Input.GetKey(KeyCode.Keypad0) && !onWall()) {
             print(dashCooldown);
             if (dashCooldown <= 0) {
                 StartCoroutine(Dash());
@@ -97,9 +97,9 @@ public class PlayerMovement : MonoBehaviour
             isDashing = false;
         }
 
-        print("grounded: " + isGrounded());
-        print("onwall: " + onWall());
-        print("isDashing: " + isDashing);
+        //print("grounded: " + isGrounded());
+        //print("onwall: " + onWall());
+        //print("isDashing: " + isDashing);
     }
 
     IEnumerator Dash() {
@@ -107,7 +107,7 @@ public class PlayerMovement : MonoBehaviour
         float startTime = Time.time;
         float localScaleX = transform.localScale.x;
         isDashing = false;
-        while (Time.time < startTime + dashTime) {
+        while (Time.time < startTime + dashTime && !onWall()) {
             isDashing = true;
             float movementSpeed = dashSpeed * Time.deltaTime;
 

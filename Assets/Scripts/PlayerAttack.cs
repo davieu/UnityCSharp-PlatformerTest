@@ -60,6 +60,9 @@ public class PlayerAttack : MonoBehaviour
     private void Attack() {
         anim.SetTrigger("attack");
         cooldownTimer = 0;
+
+        // resets the rotation of the fireball. Rotation is changed on explosion/collision with wall. So it is reset so the fireballs go the rigth direction
+        fireballs[FindFireballs()].transform.localRotation = Quaternion.Euler(0, 0, 0);
         // Object pooling - pool fireballs - 
         // Multiple fireballs already created. 
         // Fireball deactivated on hit and waits to be reused. 
@@ -67,7 +70,6 @@ public class PlayerAttack : MonoBehaviour
 
         // Everytime fireball is fired/attack() a fireball will be reset to the position 
         // of the firePoint
-        fireballs[FindFireballs()].transform.localRotation = Quaternion.Euler(0, 0, 0);
         fireballs[FindFireballs()].transform.position = firePoint.position;
         // using the SetDirection method from the projectile component. 
         // gives what direction player is facingg and which direction fireballs should face
