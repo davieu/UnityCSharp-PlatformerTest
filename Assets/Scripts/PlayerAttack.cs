@@ -67,6 +67,7 @@ public class PlayerAttack : MonoBehaviour
 
         // Everytime fireball is fired/attack() a fireball will be reset to the position 
         // of the firePoint
+        fireballs[FindFireballs()].transform.localRotation = Quaternion.Euler(0, 0, 0);
         fireballs[FindFireballs()].transform.position = firePoint.position;
         // using the SetDirection method from the projectile component. 
         // gives what direction player is facingg and which direction fireballs should face
